@@ -1,0 +1,711 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { DAY_RANGE_OPTIONS, HOUR_RANGE_OPTIONS, SOURCE_OPTIONS, useAoi } from '../state/AoiContext';
+import { MODULES } from '../lib/modules';
+import type { Hotspot, LatLng, ModuleId, SourceId } from '../types';
+import DrawAoiMap from '../components/DrawAoiMap';
+import AoiFormModal from '../components/AoiFormModal';
+import FireMapCanvas from '../components/FireMapCanvas';
+import Legend from '../components/Legend';
+import BottomTimeline from '../components/BottomTimeline';
+import TimePicker from '../components/TimePicker';
+import WindyLayerPanel from '../components/WindyLayerPanel';
+import WindyMapForecastFrame from '../components/WindyMapForecastFrame';
+import { formatHa, polygonCentroid } from '../lib/geo';
+import { compassLabel } from '../lib/geo';
+import { acqTimestampMs, formatWibDateTime } from '../lib/format';
+import { isIndonesiaDemoAoi } from '../data/indonesiaAoi';
+
+const DAY_LABEL: Record<number, string> = { 1: '24 hrs', 2: '48 hrs', 3: '3 days', 5: '5 days' };
+
+const SIM_FRAME_MS = 3 * 3600 * 1000; // one time_slot — points appear/disappear per 3h bucket
+const SIM_TICK_MS = 1600; // real-time ms per animation step while playing — slow enough to actually watch, with room for the fade
+
+export default function FieldManagement() {
+  const {
+    aois,
+    activeAoi,
+    hotspots,
+    inAoiHotspots,
+    nearbyHotspots,
+    dayCountsInAoi,
+    dayCountsAll,
+    hotspotsForDate,
+    status,
+    error,
+    fetchedAt,
+    dayRange,
+    hourRange,
+    hourMode,
+    customFrom,
+    customTo,
+    sources,
+    weather,
+    windGrid,
+    createAoi,
+    deleteAoi,
+    renameAoi,
+    setActiveAoiId,
+    setDayRange,
+    setHourRange,
+    setHourMode,
+    setCustomFrom,
+    setCustomTo,
+    setSources,
+    refetch,
+  } = useAoi();
+  const [simPlaying, setSimPlaying] = useState(false);
+  const [simFrameIndex, setSimFrameIndex] = useState(0);
+  const navigate = useNavigate();
+
+  const [mode, setMode] = useState<'view' | 'draw'>(aois.length === 0 ? 'draw' : 'view');
+  const [draftRing, setDraftRing] = useState<LatLng[] | null>(null);
+  const [draftArea, setDraftArea] = useState(0);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+
+  const [sideTab, setSideTab] = useState<'layer' | 'history'>('layer');
+  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
+  const [module, setModule] = useState<ModuleId>('hotspot');
+  const [showBoundary, setShowBoundary] = useState(true);
+  const [showSatelliteSmoke, setShowSatelliteSmoke] = useState(false);
+  const [showWindLayer, setShowWindLayer] = useState(false);
+  const [showWindyMapForecast, setShowWindyMapForecast] = useState(false);
+  const [opacity, setOpacity] = useState(85);
+  const [selectedDate, setSelectedDate] = useState<string | 'all'>('all');
+  const [openMenuFor, setOpenMenuFor] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+
+  const activeModule = MODULES.find((m) => m.id === module)!;
+  const includesNearby = module === 'impact';
+  // "All" shows the Detection-window-trimmed recent view (light, for performance).
+  // Picking a specific date on the timeline switches to that whole day instead — the
+  // trim only makes sense against "now", not a day you've deliberately gone back to.
+  const scopedHotspots = includesNearby ? hotspots : inAoiHotspots;
+
+  // Real per-date counts over the whole fetched day-range window (not the hour-trimmed
+  // view) — cheap (no distance calc), so this is what makes the timeline a genuine date
+  // picker instead of showing zeroes for every day except the currently windowed one.
+  const dateCounts = includesNearby ? dayCountsAll : dayCountsInAoi;
+  const timelineDates = useMemo(() => Object.keys(dateCounts).sort(), [dateCounts]);
+
+  // Every fetched day, annotated and scoped the same way mapHotspots is for a single
+  // date — needed once (not per animation tick) to bucket the whole window into 3h
+  // simulation frames.
+  const allWindowHotspots = useMemo(() => {
+    return timelineDates.flatMap((d) => {
+      const day = hotspotsForDate(d);
+      return includesNearby ? day : day.filter((h) => h.inAoi);
+    });
+  }, [timelineDates, hotspotsForDate, includesNearby]);
+
+  const simFrames = useMemo(() => {
+    const buckets = new Map<number, Hotspot[]>();
+    for (const h of allWindowHotspots) {
+      const key = Math.floor(acqTimestampMs(h.acqDate, h.acqTime) / SIM_FRAME_MS);
+      let bucket = buckets.get(key);
+      if (!bucket) {
+        bucket = [];
+        buckets.set(key, bucket);
+      }
+      bucket.push(h);
+    }
+    return Array.from(buckets.keys())
+      .sort((a, b) => a - b)
+      .map((key) => ({ startMs: key * SIM_FRAME_MS, hotspots: buckets.get(key)! }));
+  }, [allWindowHotspots]);
+
+  // Frame set changed under us (new AOI, wider/narrower time window) — restart clean.
+  useEffect(() => {
+    setSimPlaying(false);
+    setSimFrameIndex(0);
+  }, [activeAoi?.id, dayRange]);
+
+  useEffect(() => {
+    if (!simPlaying || simFrames.length === 0) return;
+    const id = setInterval(() => {
+      setSimFrameIndex((i) => (i + 1) % simFrames.length);
+    }, SIM_TICK_MS);
+    return () => clearInterval(id);
+  }, [simPlaying, simFrames.length]);
+
+  const mapHotspots = useMemo(() => {
+    if (simPlaying && simFrames.length > 0) {
+      return simFrames[simFrameIndex % simFrames.length]?.hotspots ?? [];
+    }
+    if (selectedDate === 'all') return scopedHotspots;
+    const day = hotspotsForDate(selectedDate); // annotated on demand, just that one day
+    return includesNearby ? day : day.filter((h) => h.inAoi);
+  }, [simPlaying, simFrames, simFrameIndex, scopedHotspots, selectedDate, hotspotsForDate, includesNearby]);
+
+  const aoiCentroid = useMemo(() => (activeAoi ? polygonCentroid(activeAoi.ring) : null), [activeAoi]);
+
+  const legendItems = useMemo(() => {
+    if (module === 'impact') {
+      return [
+        { color: '#ae1800', label: 'HIGH — 1 KM RADIUS' },
+        { color: '#ec3013', label: 'MEDIUM — 1 KM RADIUS' },
+        { color: '#ffc4b8', label: 'LOW — 1 KM RADIUS' },
+        { color: '#16171b', label: 'AOI BOUNDARY' },
+      ];
+    }
+    if (module === 'burned') {
+      return [
+        { color: '#ae1800', label: 'HIGH-CONFIDENCE FOOTPRINT' },
+        { color: '#ec3013', label: 'MEDIUM-CONFIDENCE FOOTPRINT' },
+        { color: '#ffc4b8', label: 'LOW-CONFIDENCE FOOTPRINT' },
+      ];
+    }
+    if (module === 'smoke') {
+      return [
+        { color: '#8a8d94', label: 'ESTIMATED PLUME (WIND-DRIVEN)' },
+        { color: '#ae1800', label: 'SOURCE HOTSPOT' },
+      ];
+    }
+    return [
+      { color: '#ae1800', label: 'HIGH CONFIDENCE' },
+      { color: '#ec3013', label: 'MEDIUM' },
+      { color: '#ffc4b8', label: 'LOW' },
+    ];
+  }, [module]);
+
+  function handleSaveAoi(name: string) {
+    if (!draftRing) return;
+    createAoi(name, draftRing);
+    setShowSaveModal(false);
+    setDraftRing(null);
+    setDraftArea(0);
+    setMode('view');
+    setSideTab('layer');
+  }
+
+  function toggleSource(id: SourceId) {
+    setSources(sources.includes(id) ? sources.filter((s) => s !== id) : [...sources, id]);
+  }
+
+  if (mode === 'draw') {
+    return (
+      <div className="relative h-full min-h-[420px]">
+        <DrawAoiMap
+          hasDraft={!!draftRing}
+          onDrawChange={(ring, area) => {
+            setDraftRing(ring);
+            setDraftArea(area);
+          }}
+          onSave={() => setShowSaveModal(true)}
+          onCancel={() => {
+            setDraftRing(null);
+            setDraftArea(0);
+          }}
+        />
+        {aois.length > 0 && (
+          <button
+            onClick={() => setMode('view')}
+            className="absolute top-20 right-4 sm:right-6 z-[500] bg-surface border border-line rounded-xl px-3 py-1.5 text-xs font-semibold text-ink-soft hover:text-ink shadow"
+          >
+            Cancel — back to map
+          </button>
+        )}
+        {showSaveModal && draftRing && (
+          <AoiFormModal
+            ring={draftRing}
+            areaHa={draftArea}
+            onSave={handleSaveAoi}
+            onCancel={() => setShowSaveModal(false)}
+          />
+        )}
+      </div>
+    );
+  }
+
+  const layerPanelContent = (
+    <div className="p-4">
+      <label className="flex items-center gap-2 font-bold text-sm mb-4">
+        <input type="checkbox" checked readOnly className="w-4 h-4 accent-[#ec3013]" />
+        Layer Monitoring Kebakaran
+      </label>
+
+      <div className="mb-3.5">
+        <label className="block text-xs font-semibold text-ink-soft mb-1.5">Module</label>
+        <select
+          value={module}
+          onChange={(e) => {
+            setModule(e.target.value as ModuleId);
+            setSelectedDate('all');
+          }}
+          className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-[#ec3013]/30 focus:border-[#ec3013] transition-shadow"
+        >
+          {MODULES.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.full}
+            </option>
+          ))}
+        </select>
+      </div>
+      <p className="text-[11.5px] text-ink-faint leading-relaxed mb-4">{activeModule.sub}</p>
+
+      {module === 'smoke' && weather && (
+        <div className="bg-fire-50 rounded-xl px-3 py-2.5 mb-4 text-xs">
+          <div className="font-bold text-fire-900 mb-1">Live wind at AOI</div>
+          <div className="flex justify-between text-ink-soft">
+            <span>Wind</span>
+            <strong className="text-ink">
+              {compassLabel(weather.windDirectionDeg ?? 0)} · {weather.windSpeedKmh} km/h
+            </strong>
+          </div>
+          <div className="flex justify-between text-ink-soft">
+            <span>Temp / Humidity</span>
+            <strong className="text-ink">
+              {weather.tempC}°C · {weather.humidityPct}%
+            </strong>
+          </div>
+        </div>
+      )}
+
+      {module === 'smoke' && (
+        <div className="mb-4">
+          <label className="flex items-start gap-2 text-xs font-semibold text-ink-soft cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showSatelliteSmoke}
+              onChange={() => setShowSatelliteSmoke((v) => !v)}
+              className="w-4 h-4 mt-0.5 accent-[#ec3013]"
+            />
+            <span>
+              Satellite smoke overlay (NASA GIBS)
+              <span className="block font-normal text-ink-faint mt-0.5 normal-case">
+                Real satellite-classified smoke/aerosol, same method BMKG uses — requires a single date selected below,
+                not "All".
+              </span>
+            </span>
+          </label>
+        </div>
+      )}
+
+      <div className="mb-4">
+        <label className="block text-xs font-semibold text-ink-soft mb-2">Time window</label>
+        <div className="flex flex-wrap gap-1.5">
+          {DAY_RANGE_OPTIONS.map((d) => (
+            <button
+              key={d}
+              onClick={() => {
+                setDayRange(d);
+                setSelectedDate('all');
+              }}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
+                dayRange === d
+                  ? 'bg-[#ec3013] border-[#ec3013] text-white'
+                  : 'border-line text-ink-soft hover:border-ink-faint hover:bg-canvas'
+              }`}
+            >
+              {DAY_LABEL[d]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-xs font-semibold text-ink-soft mb-2">Time-lapse simulation</label>
+        <button
+          onClick={() => setSimPlaying((v) => !v)}
+          disabled={simFrames.length === 0}
+          className={`w-full px-3 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+            simPlaying ? 'bg-ink text-white' : 'bg-[#ec3013] hover:bg-[#c22910] text-white'
+          }`}
+        >
+          {simPlaying ? '⏸ Stop simulation' : '▶ Run simulation'}
+        </button>
+        <p className="text-[10.5px] text-ink-faint mt-1.5 leading-relaxed">
+          {simFrames.length > 0
+            ? `Steps through ${simFrames.length} satellite-pass windows (~3h each) across the fetched range — points appear and disappear per pass instead of accumulating.`
+            : 'No detections in the current window to animate.'}
+        </p>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-xs font-semibold text-ink-soft mb-2">Detection window</label>
+        <div className="flex gap-1.5 mb-2">
+          <button
+            onClick={() => setHourMode('relative')}
+            className={`flex-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
+              hourMode === 'relative'
+                ? 'bg-[#ec3013] border-[#ec3013] text-white'
+                : 'border-line text-ink-soft hover:border-ink-faint hover:bg-canvas'
+            }`}
+          >
+            Most recent
+          </button>
+          <button
+            onClick={() => setHourMode('custom')}
+            className={`flex-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
+              hourMode === 'custom'
+                ? 'bg-[#ec3013] border-[#ec3013] text-white'
+                : 'border-line text-ink-soft hover:border-ink-faint hover:bg-canvas'
+            }`}
+          >
+            Custom hours
+          </button>
+        </div>
+
+        {hourMode === 'relative' ? (
+          <>
+            <div className="flex flex-wrap gap-1.5">
+              {HOUR_RANGE_OPTIONS.map((h) => (
+                <button
+                  key={h}
+                  onClick={() => setHourRange(h)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
+                    hourRange === h
+                      ? 'bg-[#ec3013] border-[#ec3013] text-white'
+                      : 'border-line text-ink-soft hover:border-ink-faint hover:bg-canvas'
+                  }`}
+                >
+                  {h}h
+                </button>
+              ))}
+            </div>
+            <p className="text-[10.5px] text-ink-faint mt-1.5 leading-relaxed">
+              Showing {hotspots.length} detection{hotspots.length === 1 ? '' : 's'} from the last {hourRange}h, relative
+              to the most recent one in view — keeps the map light instead of plotting every point at once. Pick a date
+              on the timeline below to browse a specific day instead.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-1.5">
+              <TimePicker value={customFrom} onChange={setCustomFrom} className="flex-1" />
+              <span className="text-ink-faint text-xs shrink-0">to</span>
+              <TimePicker value={customTo} onChange={setCustomTo} className="flex-1" />
+            </div>
+            <p className="text-[10.5px] text-ink-faint mt-1.5 leading-relaxed">
+              Showing {hotspots.length} detection{hotspots.length === 1 ? '' : 's'} between {customFrom} and {customTo}{' '}
+              WIB, on the most recent day in view.
+            </p>
+          </>
+        )}
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-xs font-semibold text-ink-soft mb-2">Satellite source</label>
+        <div className="flex flex-col gap-1.5">
+          {SOURCE_OPTIONS.map((s) => (
+            <label key={s.id} className="flex items-center gap-2 text-xs text-ink-soft">
+              <input
+                type="checkbox"
+                checked={sources.includes(s.id)}
+                onChange={() => toggleSource(s.id)}
+                className="w-3.5 h-3.5 accent-[#ec3013]"
+              />
+              {s.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-xs font-semibold text-ink-soft mb-1.5">Opacity: {opacity}%</label>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={opacity}
+          onChange={(e) => setOpacity(Number(e.target.value))}
+          className="w-full accent-[#ec3013]"
+        />
+      </div>
+
+      <label className="flex items-center gap-2 text-sm text-ink-soft cursor-pointer mb-2">
+        <input
+          type="checkbox"
+          checked={showBoundary}
+          onChange={() => setShowBoundary((v) => !v)}
+          className="w-4 h-4 accent-[#ec3013]"
+        />
+        AOI Boundary
+      </label>
+
+      <label className="flex items-start gap-2 text-sm text-ink-soft cursor-pointer">
+        <input
+          type="checkbox"
+          checked={showWindLayer}
+          onChange={() => setShowWindLayer((v) => !v)}
+          className="w-4 h-4 mt-0.5 accent-[#ec3013]"
+        />
+        <span>
+          Wind layer
+          <span className="block font-normal text-[11.5px] text-ink-faint mt-0.5">
+            Animated wind field over the visible map (Open-Meteo)
+          </span>
+        </span>
+      </label>
+
+      <WindyLayerPanel enabled={showWindyMapForecast} onToggle={() => setShowWindyMapForecast((v) => !v)} />
+    </div>
+  );
+
+  const historyPanelContent = (
+    <div className="p-4">
+      <button
+        onClick={() => setMode('draw')}
+        className="w-full bg-[#ec3013] hover:bg-[#c22910] active:scale-[0.98] text-white font-semibold text-sm rounded-xl py-2.5 mb-5 shadow-sm transition-all"
+      >
+        + Draw New AOI
+      </button>
+      <div className="font-bold text-xs mb-2.5">AOI List ({aois.length})</div>
+      <div className="flex flex-col gap-2">
+        {aois.map((a) => (
+          <div key={a.id} className="relative">
+            <button
+              onClick={() => setActiveAoiId(a.id)}
+              className={`w-full text-left rounded-xl px-3.5 py-2.5 border transition-colors ${
+                activeAoi?.id === a.id
+                  ? 'bg-fire-50 border-[#ffc4b8] shadow-sm'
+                  : 'border-line hover:border-ink-faint hover:bg-canvas'
+              }`}
+            >
+              {renamingId === a.id ? (
+                <input
+                  autoFocus
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && renameValue.trim()) {
+                      renameAoi(a.id, renameValue.trim());
+                      setRenamingId(null);
+                    }
+                    if (e.key === 'Escape') setRenamingId(null);
+                  }}
+                  onBlur={() => setRenamingId(null)}
+                  className="w-full text-sm font-bold border border-line rounded px-1.5 py-0.5"
+                />
+              ) : (
+                <div className="font-bold text-sm pr-6">{a.name}</div>
+              )}
+              <div className="text-[11px] text-ink-faint mt-0.5">
+                {activeAoi?.id === a.id ? 'active' : 'saved'} · {formatHa(a.areaHa)} · {a.ring.length} pts
+              </div>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenMenuFor(openMenuFor === a.id ? null : a.id);
+              }}
+              className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center text-ink-faint hover:text-ink"
+            >
+              ⋯
+            </button>
+            {openMenuFor === a.id && (
+              <div className="absolute right-0 top-9 z-30 bg-surface border border-line rounded-xl shadow-lg w-36 py-1">
+                <button
+                  onClick={() => {
+                    setRenamingId(a.id);
+                    setRenameValue(a.name);
+                    setOpenMenuFor(null);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-ink-soft hover:bg-canvas"
+                >
+                  Edit name
+                </button>
+                <button
+                  onClick={() => {
+                    deleteAoi(a.id);
+                    setOpenMenuFor(null);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-[#ae1800] dark:text-[#ff8a65] hover:bg-canvas"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+        {aois.length === 0 && <div className="text-xs text-ink-faint">No AOIs yet.</div>}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col sm:flex-row h-full min-h-[480px]">
+      <aside className="hidden sm:flex sm:flex-col w-72 shrink-0 border-r border-line overflow-y-auto bg-surface">
+        <div className="flex border-b border-line">
+          <button
+            onClick={() => setSideTab('layer')}
+            className={`flex-1 py-3.5 font-[Manrope] font-bold text-sm transition-colors ${sideTab === 'layer' ? 'text-ink border-b-2 border-[#ec3013]' : 'text-ink-faint hover:text-ink-soft'}`}
+          >
+            Layer
+          </button>
+          <button
+            onClick={() => setSideTab('history')}
+            className={`flex-1 py-3.5 font-[Manrope] font-bold text-sm transition-colors ${sideTab === 'history' ? 'text-ink border-b-2 border-[#ec3013]' : 'text-ink-faint hover:text-ink-soft'}`}
+          >
+            History
+          </button>
+        </div>
+        {sideTab === 'layer' ? layerPanelContent : historyPanelContent}
+      </aside>
+
+      <div className="flex-1 relative overflow-hidden">
+        {!activeAoi ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-canvas px-6">
+            <div className="text-center max-w-xs">
+              <div className="font-bold text-ink mb-1">No AOI selected</div>
+              <p className="text-sm text-ink-soft mb-4">
+                Draw an Area of Interest to start fetching live fire hotspot data.
+              </p>
+              <button
+                onClick={() => setMode('draw')}
+                className="bg-[#ec3013] hover:bg-[#c22910] text-white font-semibold text-sm rounded-xl px-4 py-2"
+              >
+                Draw New AOI
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <FireMapCanvas
+              ring={activeAoi.ring}
+              hotspots={mapHotspots}
+              module={module}
+              showBoundary={showBoundary && !isIndonesiaDemoAoi(activeAoi.name)}
+              opacity={opacity}
+              windGrid={windGrid}
+              satelliteSmokeDate={showSatelliteSmoke && selectedDate !== 'all' ? selectedDate : null}
+              showWindLayer={showWindLayer}
+              animate={simPlaying}
+            />
+            {showWindyMapForecast && aoiCentroid && (
+              <WindyMapForecastFrame center={aoiCentroid} onClose={() => setShowWindyMapForecast(false)} />
+            )}
+            <div className="hidden sm:block absolute top-4 right-4 z-[400]">
+              <Legend
+                title={
+                  module === 'impact'
+                    ? 'Impact Radius (per point)'
+                    : module === 'burned'
+                      ? 'Estimated Footprint'
+                      : module === 'smoke'
+                        ? 'Smoke Estimate'
+                        : 'Fire Confidence'
+                }
+                items={legendItems}
+              />
+            </div>
+            <div className="absolute top-4 left-4 right-4 sm:right-auto z-[400] flex flex-col gap-2">
+              {simPlaying && simFrames[simFrameIndex % simFrames.length] && (
+                <div className="bg-ink text-white rounded-xl shadow px-3 py-1.5 text-xs font-bold w-fit tabular-nums">
+                  ▶ {formatWibDateTime(simFrames[simFrameIndex % simFrames.length].startMs)}–
+                  {formatWibDateTime(simFrames[simFrameIndex % simFrames.length].startMs + SIM_FRAME_MS)} WIB
+                  <span className="font-normal text-white/70 ml-2">
+                    frame {(simFrameIndex % simFrames.length) + 1}/{simFrames.length} ·{' '}
+                    {simFrames[simFrameIndex % simFrames.length].hotspots.length} pts
+                  </span>
+                </div>
+              )}
+              {status === 'loading' && (
+                <div className="bg-surface rounded-xl shadow border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft w-fit">
+                  Fetching live hotspots…
+                </div>
+              )}
+              {status === 'error' && (
+                <div className="bg-surface rounded-xl shadow border border-red-200 dark:border-red-900/50 px-3 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 max-w-xs">
+                  {error}{' '}
+                  <button onClick={refetch} className="underline ml-1">
+                    retry
+                  </button>
+                </div>
+              )}
+              {status === 'idle' && fetchedAt && (
+                <div className="bg-surface rounded-xl shadow border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft w-fit">
+                  {inAoiHotspots.length} in AOI · {nearbyHotspots.length} nearby · synced{' '}
+                  {new Date(fetchedAt).toLocaleTimeString()}
+                </div>
+              )}
+              {(module === 'burned' || module === 'smoke') && (
+                <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-xl shadow px-3 py-1.5 text-[11px] font-semibold text-amber-800 dark:text-amber-300 w-fit max-w-[280px]">
+                  Estimate derived from live hotspot{module === 'smoke' ? ' + wind' : ''} data — not a validated{' '}
+                  {module === 'burned' ? 'burn-scar' : 'aerosol-imagery'} product.
+                </div>
+              )}
+            </div>
+
+            <BottomTimeline
+              dates={timelineDates}
+              counts={dateCounts}
+              allCount={scopedHotspots.length}
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+            />
+
+            <button
+              onClick={() => navigate('/analytics')}
+              className="hidden sm:block absolute bottom-20 right-4 z-[400] bg-surface border border-line rounded-xl px-3.5 py-2 text-xs font-semibold text-ink-soft hover:text-ink shadow"
+            >
+              View full analytics →
+            </button>
+
+            {/* Mobile: floating layers button + slide-up sheet */}
+            <button
+              onClick={() => setMobilePanelOpen(true)}
+              className="sm:hidden absolute bottom-20 right-4 z-[420] w-12 h-12 rounded-full bg-[#ec3013] text-white shadow-lg flex items-center justify-center"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="12,3 21,8 12,13 3,8"></polygon>
+                <polyline points="3,13 12,18 21,13"></polyline>
+              </svg>
+            </button>
+            {mobilePanelOpen && (
+              <div className="sm:hidden fixed inset-0 z-[600] flex items-end" onClick={() => setMobilePanelOpen(false)}>
+                <div className="absolute inset-0 bg-black/40" />
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative w-full max-h-[80vh] overflow-y-auto bg-surface rounded-t-2xl shadow-2xl"
+                >
+                  <div className="sticky top-0 bg-surface flex items-center justify-between px-4 py-3 border-b border-line">
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => setSideTab('layer')}
+                        className={`font-[Manrope] font-bold text-sm ${sideTab === 'layer' ? 'text-ink' : 'text-ink-faint'}`}
+                      >
+                        Layer
+                      </button>
+                      <button
+                        onClick={() => setSideTab('history')}
+                        className={`font-[Manrope] font-bold text-sm ${sideTab === 'history' ? 'text-ink' : 'text-ink-faint'}`}
+                      >
+                        History
+                      </button>
+                    </div>
+                    <button onClick={() => setMobilePanelOpen(false)} className="text-ink-faint">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      >
+                        <path d="M6 6l12 12M18 6L6 18" />
+                      </svg>
+                    </button>
+                  </div>
+                  {sideTab === 'layer' ? layerPanelContent : historyPanelContent}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
