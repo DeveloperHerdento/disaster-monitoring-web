@@ -16,7 +16,7 @@ export default function TrendChart({ labels, values, color = '#ec3013', height =
 
   if (values.every((v) => v === 0)) {
     return (
-      <div className="h-[150px] flex items-center justify-center text-xs text-ink-faint">
+      <div className="h-[150px] flex items-center justify-center text-xs text-legacy-ink-faint">
         No detections in this window
       </div>
     );
@@ -32,7 +32,7 @@ export default function TrendChart({ labels, values, color = '#ec3013', height =
           return <circle key={i} cx={x} cy={y} r={2.6} fill={color} />;
         })}
       </svg>
-      <div className="flex justify-between text-[10px] text-ink-faint mt-1 px-0.5">
+      <div className="flex justify-between text-[10px] text-legacy-ink-faint mt-1 px-0.5">
         {labels.map((l, i) => (
           <span key={i} className={n > 8 && i % 2 !== 0 ? 'opacity-0' : ''}>
             {l}

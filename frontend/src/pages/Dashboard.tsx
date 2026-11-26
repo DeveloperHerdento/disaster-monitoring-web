@@ -42,7 +42,7 @@ export default function Dashboard() {
       <div className="max-w-md mx-auto text-center py-28 px-6">
         <div className="text-4xl mb-4">🔥</div>
         <h1 className="text-xl font-bold mb-2">No Area of Interest yet</h1>
-        <p className="text-sm text-ink-soft mb-6">
+        <p className="text-sm text-legacy-ink-soft mb-6">
           Draw an AOI first — the dashboard, fire map, and analytics all key off live hotspot data fetched inside its
           boundary.
         </p>
@@ -60,10 +60,13 @@ export default function Dashboard() {
     <div className="px-4 sm:px-8 py-5 sm:py-8 pb-8 max-w-[1400px] mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1">
         <h1 className="text-xl sm:text-2xl font-extrabold">Fire Monitoring Dashboard</h1>
-        {fetchedAt && <span className="text-xs text-ink-faint">Synced {relativeTime(fetchedAt)} · NASA FIRMS</span>}
+        {fetchedAt && (
+          <span className="text-xs text-legacy-ink-faint">Synced {relativeTime(fetchedAt)} · NASA FIRMS</span>
+        )}
       </div>
-      <p className="text-ink-soft mb-6 text-sm sm:text-base">
-        Live hotspot summary for <strong className="text-ink">{activeAoi.name}</strong> ({formatHa(activeAoi.areaHa)}).
+      <p className="text-legacy-ink-soft mb-6 text-sm sm:text-base">
+        Live hotspot summary for <strong className="text-legacy-ink">{activeAoi.name}</strong> (
+        {formatHa(activeAoi.areaHa)}).
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
@@ -98,7 +101,7 @@ export default function Dashboard() {
         </button>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 mb-8">
-        <div className="relative h-[280px] sm:h-[360px] lg:h-[420px] rounded-2xl overflow-hidden border border-line shadow-sm">
+        <div className="relative h-[280px] sm:h-[360px] lg:h-[420px] rounded-2xl overflow-hidden border border-legacy-line shadow-sm">
           <FireMapCanvas
             ring={activeAoi.ring}
             hotspots={inAoiHotspots}
@@ -119,8 +122,10 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex flex-col gap-4 lg:h-[420px]">
-          <div className="bg-surface border border-line rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 lg:flex-1 lg:flex lg:flex-col lg:justify-center">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-2.5">AOI Summary</div>
+          <div className="bg-legacy-surface border border-legacy-line rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 lg:flex-1 lg:flex lg:flex-col lg:justify-center">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-legacy-ink-faint mb-2.5">
+              AOI Summary
+            </div>
             <Row k="Area" v={formatHa(activeAoi.areaHa)} />
             <Row k="Vertices" v={String(activeAoi.ring.length)} />
             <Row k="In-AOI hotspots" v={String(inAoiHotspots.length)} />
@@ -132,11 +137,11 @@ export default function Dashboard() {
               </>
             )}
           </div>
-          <div className="bg-surface border border-line rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 lg:flex-1 lg:flex lg:flex-col lg:justify-center">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-2.5">
+          <div className="bg-legacy-surface border border-legacy-line rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 lg:flex-1 lg:flex lg:flex-col lg:justify-center">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-legacy-ink-faint mb-2.5">
               Confidence Breakdown
             </div>
-            <div className="flex h-2 rounded-full overflow-hidden mb-2.5 bg-line-soft">
+            <div className="flex h-2 rounded-full overflow-hidden mb-2.5 bg-legacy-line-soft">
               {(['high', 'nominal', 'low'] as const).map((t) => (
                 <div
                   key={t}
@@ -161,9 +166,9 @@ export default function Dashboard() {
       </div>
 
       <h2 className="font-bold text-lg mb-3 mt-2">Recent Detections</h2>
-      <div className="mb-8 bg-surface border border-line rounded-2xl shadow-sm overflow-hidden">
+      <div className="mb-8 bg-legacy-surface border border-legacy-line rounded-2xl shadow-sm overflow-hidden">
         {inAoiHotspots.length === 0 && (
-          <div className="py-8 text-center text-ink-faint text-xs">
+          <div className="py-8 text-center text-legacy-ink-faint text-xs">
             No hotspots detected in this AOI for the selected time window.
           </div>
         )}
@@ -173,16 +178,16 @@ export default function Dashboard() {
           .map((h, i, arr) => (
             <div
               key={h.id}
-              className={`flex items-center gap-3 px-4 py-3.5 hover:bg-canvas transition-colors ${i !== arr.length - 1 ? 'border-b border-line-soft' : ''}`}
+              className={`flex items-center gap-3 px-4 py-3.5 hover:bg-legacy-canvas transition-colors ${i !== arr.length - 1 ? 'border-b border-legacy-line-soft' : ''}`}
             >
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: tierBg(h.confidence).fg }} />
               <div className="min-w-0 flex-1">
                 <div className="font-semibold truncate">{confidenceLabel(h.confidence)} confidence detection</div>
-                <div className="text-xs text-ink-faint">
+                <div className="text-xs text-legacy-ink-faint">
                   {h.satellite} {h.instrument} · FRP {h.frp ?? '—'} MW
                 </div>
               </div>
-              <div className="text-xs text-ink-faint whitespace-nowrap shrink-0">
+              <div className="text-xs text-legacy-ink-faint whitespace-nowrap shrink-0">
                 {formatWibDate(h.acqDate, h.acqTime)} · {formatWibTime(h.acqDate, h.acqTime)}
               </div>
             </div>
@@ -196,14 +201,14 @@ export default function Dashboard() {
         </button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="border border-line p-4">
+        <div className="border border-legacy-line p-4">
           <div className="font-semibold text-sm mb-0.5">Hotspot Trend</div>
-          <div className="text-xs text-ink-faint mb-2">Detections per day inside AOI</div>
+          <div className="text-xs text-legacy-ink-faint mb-2">Detections per day inside AOI</div>
           <TrendChart labels={trend.labels} values={trend.values} />
         </div>
-        <div className="border border-line p-4">
+        <div className="border border-legacy-line p-4">
           <div className="font-semibold text-sm mb-0.5">Nearby Activity</div>
-          <div className="text-xs text-ink-faint mb-3">Detections outside AOI, by distance band</div>
+          <div className="text-xs text-legacy-ink-faint mb-3">Detections outside AOI, by distance band</div>
           <BarList
             items={[
               {
@@ -241,7 +246,7 @@ export default function Dashboard() {
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex justify-between text-sm mb-1.5 last:mb-0">
-      <span className="text-ink-soft">{k}</span>
+      <span className="text-legacy-ink-soft">{k}</span>
       <strong>{v}</strong>
     </div>
   );

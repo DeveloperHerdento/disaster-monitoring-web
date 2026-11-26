@@ -12,16 +12,16 @@ export default function BottomTimeline({ dates, counts, allCount, selected, onSe
   if (dates.length === 0) return null;
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-[400] bg-surface/95 backdrop-blur rounded-2xl shadow-lg border border-line px-4 py-2.5 flex items-center gap-1 overflow-x-auto">
+    <div className="absolute bottom-4 left-4 right-4 z-[400] bg-legacy-surface/95 backdrop-blur rounded-2xl shadow-lg border border-legacy-line px-4 py-2.5 flex items-center gap-1 overflow-x-auto">
       <button
         onClick={() => onSelect('all')}
         className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
-          selected === 'all' ? 'bg-[#ec3013] text-white' : 'text-ink-faint hover:text-ink'
+          selected === 'all' ? 'bg-[#ec3013] text-white' : 'text-legacy-ink-faint hover:text-legacy-ink'
         }`}
       >
         All ({allCount})
       </button>
-      <span className="w-px h-4 bg-line shrink-0 mx-1" />
+      <span className="w-px h-4 bg-legacy-line shrink-0 mx-1" />
       <div className="flex flex-1 items-center justify-center gap-1 min-w-0">
         {dates.map((d) => {
           const count = counts[d] ?? 0;
@@ -34,10 +34,10 @@ export default function BottomTimeline({ dates, counts, allCount, selected, onSe
               title={hasData ? `${count} detection${count === 1 ? '' : 's'}` : 'No detections this day'}
               className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-colors ${
                 !hasData
-                  ? 'text-line cursor-default'
+                  ? 'text-legacy-line cursor-default'
                   : selected === d
                     ? 'text-[#ae1800] dark:text-[#ff8a65]'
-                    : 'text-ink-faint hover:text-ink'
+                    : 'text-legacy-ink-faint hover:text-legacy-ink'
               }`}
             >
               <span className={selected === d && hasData ? 'border-b-2 border-[#ec3013] pb-0.5 font-bold' : 'pb-0.5'}>

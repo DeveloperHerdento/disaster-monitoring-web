@@ -294,7 +294,7 @@ export default function FireMapCanvas({
         const statusText =
           h.distanceToBoundaryKm === undefined ? '—' : h.inAoi ? 'Inside AOI' : `${h.distanceToBoundaryKm} km from AOI`;
         const row = (label: string, value: string) =>
-          `<span style="color:var(--color-ink-faint)">${label}</span><span style="color:var(--color-ink);font-weight:600">${value}</span>`;
+          `<span style="color:var(--color-legacy-ink-faint)">${label}</span><span style="color:var(--color-legacy-ink);font-weight:600">${value}</span>`;
         marker.bindPopup(
           `<div style="font-family:Inter,sans-serif;font-size:12px;min-width:190px">` +
             `<div style="font-weight:800;font-size:13px;margin-bottom:6px;color:${tierColor(h.confidence)}">${confidenceLabel(h.confidence)} confidence</div>` +

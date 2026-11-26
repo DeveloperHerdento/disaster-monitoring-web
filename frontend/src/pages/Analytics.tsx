@@ -112,7 +112,7 @@ export default function Analytics() {
     return (
       <div className="max-w-md mx-auto text-center py-28 px-6">
         <h1 className="text-xl font-bold mb-2">No Area of Interest yet</h1>
-        <p className="text-sm text-ink-soft mb-6">
+        <p className="text-sm text-legacy-ink-soft mb-6">
           Analytics are computed from live hotspot data inside an AOI. Draw one to get started.
         </p>
         <button
@@ -128,9 +128,9 @@ export default function Analytics() {
   return (
     <div className="px-4 sm:px-8 py-5 sm:py-8 pb-8 max-w-[1400px] mx-auto">
       <h1 className="text-xl sm:text-2xl font-extrabold mb-1">Fire Analytics</h1>
-      <p className="text-ink-soft mb-6 text-sm sm:text-base">
-        Full breakdown for <strong className="text-ink">{activeAoi.name}</strong> — {inAoiHotspots.length} in-AOI,{' '}
-        {nearbyHotspots.length} nearby detections.
+      <p className="text-legacy-ink-soft mb-6 text-sm sm:text-base">
+        Full breakdown for <strong className="text-legacy-ink">{activeAoi.name}</strong> — {inAoiHotspots.length}{' '}
+        in-AOI, {nearbyHotspots.length} nearby detections.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -138,7 +138,7 @@ export default function Analytics() {
           <TrendChart labels={trend.labels} values={trend.values} height={170} />
         </Card>
         <Card title="Confidence Level Distribution" sub="Proportion of detections by confidence tier">
-          <div className="flex h-3 rounded-full overflow-hidden mb-3 bg-line-soft">
+          <div className="flex h-3 rounded-full overflow-hidden mb-3 bg-legacy-line-soft">
             {(['high', 'nominal', 'low'] as const).map((t) => (
               <div
                 key={t}
@@ -177,7 +177,7 @@ export default function Analytics() {
             <button
               key={k}
               onClick={() => setSortKey(k)}
-              className={`px-4 py-2 rounded-full font-semibold capitalize transition-colors ${sortKey === k ? 'bg-[#ec3013] text-white shadow-sm' : 'bg-canvas text-ink-soft hover:bg-line-soft'}`}
+              className={`px-4 py-2 rounded-full font-semibold capitalize transition-colors ${sortKey === k ? 'bg-[#ec3013] text-white shadow-sm' : 'bg-legacy-canvas text-legacy-ink-soft hover:bg-legacy-line-soft'}`}
             >
               {k}
             </button>
@@ -185,7 +185,7 @@ export default function Analytics() {
         </div>
       </div>
 
-      <div className="bg-surface border border-line rounded-2xl shadow-sm p-3 mb-4 flex flex-wrap items-center gap-4">
+      <div className="bg-legacy-surface border border-legacy-line rounded-2xl shadow-sm p-3 mb-4 flex flex-wrap items-center gap-4">
         <FilterGroup label="Status">
           {(['all', 'in', 'nearby'] as StatusFilter[]).map((v) => (
             <FilterPill key={v} active={statusFilter === v} onClick={() => setStatusFilter(v)}>
@@ -203,11 +203,11 @@ export default function Analytics() {
         </FilterGroup>
 
         <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Source</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-legacy-ink-faint">Source</span>
           <select
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value)}
-            className="border border-line rounded-full px-3 py-1.5 text-xs font-semibold text-ink-soft bg-surface focus:outline-none focus:ring-2 focus:ring-[#ec3013]/30 focus:border-[#ec3013] transition-shadow"
+            className="border border-legacy-line rounded-full px-3 py-1.5 text-xs font-semibold text-legacy-ink-soft bg-legacy-surface focus:outline-none focus:ring-2 focus:ring-[#ec3013]/30 focus:border-[#ec3013] transition-shadow"
           >
             <option value="all">All sources</option>
             {sourceOptions.map((s) => (
@@ -219,14 +219,14 @@ export default function Analytics() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Min FRP (MW)</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-legacy-ink-faint">Min FRP (MW)</span>
           <input
             type="number"
             min={0}
             placeholder="e.g. 10"
             value={minFrp}
             onChange={(e) => setMinFrp(e.target.value)}
-            className="w-24 border border-line rounded-full px-3 py-1.5 text-xs font-semibold text-ink bg-surface focus:outline-none focus:ring-2 focus:ring-[#ec3013]/30 focus:border-[#ec3013] transition-shadow"
+            className="w-24 border border-legacy-line rounded-full px-3 py-1.5 text-xs font-semibold text-legacy-ink bg-legacy-surface focus:outline-none focus:ring-2 focus:ring-[#ec3013]/30 focus:border-[#ec3013] transition-shadow"
           />
         </div>
 
@@ -240,10 +240,10 @@ export default function Analytics() {
         )}
       </div>
 
-      <div className="bg-surface border border-line rounded-2xl shadow-sm overflow-hidden overflow-x-auto">
+      <div className="bg-legacy-surface border border-legacy-line rounded-2xl shadow-sm overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[720px]">
           <thead>
-            <tr className="text-left text-[10.5px] uppercase tracking-wide text-ink-faint bg-canvas">
+            <tr className="text-left text-[10.5px] uppercase tracking-wide text-legacy-ink-faint bg-legacy-canvas">
               <th className="px-3 py-2.5 font-semibold">Status</th>
               <th className="px-3 py-2.5 font-semibold">Confidence</th>
               <th className="px-3 py-2.5 font-semibold">Location</th>
@@ -256,7 +256,7 @@ export default function Analytics() {
           <tbody>
             {sortedRows.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-ink-faint text-xs">
+                <td colSpan={7} className="text-center py-8 text-legacy-ink-faint text-xs">
                   {filtersActive ? (
                     <>
                       No detections match these filters.{' '}
@@ -271,10 +271,10 @@ export default function Analytics() {
               </tr>
             )}
             {pagedRows.map((h) => (
-              <tr key={h.id} className="border-t border-line-soft hover:bg-canvas transition-colors">
+              <tr key={h.id} className="border-t border-legacy-line-soft hover:bg-legacy-canvas transition-colors">
                 <td className="px-3 py-2.5">
                   <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${h.inAoi ? 'bg-fire-50 text-fire-900' : 'bg-line-soft text-ink-soft'}`}
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${h.inAoi ? 'bg-fire-50 text-fire-900' : 'bg-legacy-line-soft text-legacy-ink-soft'}`}
                   >
                     {h.inAoi ? 'IN AOI' : 'NEARBY'}
                   </span>
@@ -282,15 +282,15 @@ export default function Analytics() {
                 <td className="px-3 py-2.5 font-semibold" style={{ color: tierBg(h.confidence).fg }}>
                   {confidenceLabel(h.confidence)}
                 </td>
-                <td className="px-3 py-2.5 font-mono text-xs text-ink-soft">
+                <td className="px-3 py-2.5 font-mono text-xs text-legacy-ink-soft">
                   {h.lat.toFixed(4)}, {h.lng.toFixed(4)}
                 </td>
-                <td className="px-3 py-2.5 text-ink-soft">
+                <td className="px-3 py-2.5 text-legacy-ink-soft">
                   {h.satellite} {h.instrument}
                 </td>
                 <td className="px-3 py-2.5">{h.frp ?? '—'} MW</td>
                 <td className="px-3 py-2.5">{h.distanceToBoundaryKm ?? 0} km</td>
-                <td className="px-3 py-2.5 text-right text-ink-faint whitespace-nowrap">
+                <td className="px-3 py-2.5 text-right text-legacy-ink-faint whitespace-nowrap">
                   {formatWibDate(h.acqDate, h.acqTime)} · {formatWibTime(h.acqDate, h.acqTime)}
                 </td>
               </tr>
@@ -301,13 +301,13 @@ export default function Analytics() {
 
       {sortedRows.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
-          <div className="flex items-center gap-3 text-sm text-ink-soft">
+          <div className="flex items-center gap-3 text-sm text-legacy-ink-soft">
             <span>
               Showing{' '}
-              <strong className="text-ink">
+              <strong className="text-legacy-ink">
                 {rangeStart}–{rangeEnd}
               </strong>{' '}
-              of <strong className="text-ink">{sortedRows.length}</strong>
+              of <strong className="text-legacy-ink">{sortedRows.length}</strong>
             </span>
             <select
               value={pageSize}
@@ -315,7 +315,7 @@ export default function Analytics() {
                 setPageSize(Number(e.target.value));
                 setPage(1);
               }}
-              className="border border-line rounded-full px-3.5 py-2 text-sm font-semibold bg-surface focus:outline-none focus:ring-2 focus:ring-[#ec3013]/30 focus:border-[#ec3013] transition-shadow"
+              className="border border-legacy-line rounded-full px-3.5 py-2 text-sm font-semibold bg-legacy-surface focus:outline-none focus:ring-2 focus:ring-[#ec3013]/30 focus:border-[#ec3013] transition-shadow"
             >
               {[10, 25, 50, 100].map((n) => (
                 <option key={n} value={n}>
@@ -329,13 +329,13 @@ export default function Analytics() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 rounded-full text-sm font-semibold bg-canvas text-ink-soft hover:bg-line-soft disabled:opacity-40 disabled:hover:bg-canvas transition-colors"
+              className="px-4 py-2 rounded-full text-sm font-semibold bg-legacy-canvas text-legacy-ink-soft hover:bg-legacy-line-soft disabled:opacity-40 disabled:hover:bg-legacy-canvas transition-colors"
             >
               ← Prev
             </button>
             {paginationItems(currentPage, pageCount).map((item, i) =>
               item === '…' ? (
-                <span key={`gap-${i}`} className="px-2 text-sm text-ink-faint">
+                <span key={`gap-${i}`} className="px-2 text-sm text-legacy-ink-faint">
                   …
                 </span>
               ) : (
@@ -343,7 +343,9 @@ export default function Analytics() {
                   key={item}
                   onClick={() => setPage(item as number)}
                   className={`w-9 h-9 rounded-full text-sm font-semibold transition-colors ${
-                    item === currentPage ? 'bg-[#ec3013] text-white shadow-sm' : 'text-ink-soft hover:bg-line-soft'
+                    item === currentPage
+                      ? 'bg-[#ec3013] text-white shadow-sm'
+                      : 'text-legacy-ink-soft hover:bg-legacy-line-soft'
                   }`}
                 >
                   {item}
@@ -353,7 +355,7 @@ export default function Analytics() {
             <button
               onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
               disabled={currentPage === pageCount}
-              className="px-4 py-2 rounded-full text-sm font-semibold bg-canvas text-ink-soft hover:bg-line-soft disabled:opacity-40 disabled:hover:bg-canvas transition-colors"
+              className="px-4 py-2 rounded-full text-sm font-semibold bg-legacy-canvas text-legacy-ink-soft hover:bg-legacy-line-soft disabled:opacity-40 disabled:hover:bg-legacy-canvas transition-colors"
             >
               Next →
             </button>
@@ -379,9 +381,9 @@ function paginationItems(current: number, total: number): (number | '…')[] {
 
 function Card({ title, sub, children }: { title: string; sub: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface border border-line rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="bg-legacy-surface border border-legacy-line rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="font-semibold text-sm mb-0.5">{title}</div>
-      <div className="text-xs text-ink-faint mb-3">{sub}</div>
+      <div className="text-xs text-legacy-ink-faint mb-3">{sub}</div>
       {children}
     </div>
   );
@@ -390,7 +392,7 @@ function Card({ title, sub, children }: { title: string; sub: string; children: 
 function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">{label}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-legacy-ink-faint">{label}</span>
       <div className="flex gap-1">{children}</div>
     </div>
   );
@@ -409,7 +411,7 @@ function FilterPill({
     <button
       onClick={onClick}
       className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-colors ${
-        active ? 'bg-[#ec3013] text-white shadow-sm' : 'bg-canvas text-ink-soft hover:bg-line-soft'
+        active ? 'bg-[#ec3013] text-white shadow-sm' : 'bg-legacy-canvas text-legacy-ink-soft hover:bg-legacy-line-soft'
       }`}
     >
       {children}
