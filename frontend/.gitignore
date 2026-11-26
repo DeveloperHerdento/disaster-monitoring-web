@@ -1,0 +1,24 @@
+# Frontend (Vite + npm). Repo-wide rules (data, docs/notes, archives) live in ../.gitignore.
+
+# Dependencies and build output (rebuilt from package-lock.json / CI)
+node_modules/
+dist/
+dist-ssr/
+coverage/
+*.tsbuildinfo
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Secrets: only the templates are versioned
+.env*
+!.env*.example
+
+# Editor and OS junk
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

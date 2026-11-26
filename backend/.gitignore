@@ -1,0 +1,22 @@
+# Backend (Node.js). Repo-wide rules (data, docs/notes, archives) live in ../.gitignore.
+
+# Dependencies and build output (rebuilt from package-lock.json / CI)
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Secrets: only the templates are versioned
+.env*
+!.env*.example
+
+# Editor and OS junk
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

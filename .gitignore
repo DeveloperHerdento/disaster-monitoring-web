@@ -1,0 +1,36 @@
+# Root ignores for the whole repo. frontend/ and backend/ keep their own .gitignore too.
+
+# Dependencies and build output (rebuilt from lockfiles / CI)
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vercel/
+
+# Secrets: only the templates are versioned
+.env*
+!.env*.example
+
+# Archives, OS and crash junk
+*.zip
+*.rar
+*.stackdump
+.DS_Store
+Thumbs.db
+
+# Personal notes and AI tool state
+.local/
+.claude/
+CLAUDE.md
+
+# Data (HGS-STD-11): only backend/data/README.md and the .gitkeep files are versioned
+backend/data/raw/*
+backend/data/interim/*
+backend/data/processed/*
+!backend/data/**/.gitkeep
+
+# Personal/working notes (plans, research, PRD drafts, mockups): local only
+docs/notes/
+
+# Docs are kept outside git (owner decision 2026-11-17, deviates from HGS-STD 10.1)
+/docs/

@@ -1,0 +1,35 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [develop, main]
+permissions:
+  contents: read
+jobs:
+  frontend:
+    uses: DeveloperHerdento/.github/.github/workflows/ci-node.yml@v1
+    with:
+      working-directory: frontend
+      # TODO(owner): no tests yet. Add Vitest + an `npm test` script, then remove this line.
+      run-tests: false
+
+  # The backend is one plain JS file with no lint/format/test tooling yet, so it gets a minimal
+  # syntax check instead of the full ci-node pipeline. gitleaks already runs in the frontend job.
+  # TODO(owner): switch to ci-node.yml (working-directory: backend, gitleaks: false) once the backend has ESLint + tests.
+  backend:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ci-backend-${{ github.ref }}
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: backend/.nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
