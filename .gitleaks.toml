@@ -1,0 +1,8 @@
+title = "disaster-web"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "ratra-ui copy-in manifest maps file paths to sha256 hashes; it holds no secrets"
+paths = ['''frontend/src/components/ui/ratra/ratra-ui\.json''']

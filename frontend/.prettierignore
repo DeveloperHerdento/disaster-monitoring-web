@@ -1,6 +1,7 @@
 dist
 coverage
 package-lock.json
+src/components/ui/ratra
 src/data/*.geojson
 src/data/*.json
 public/data/

@@ -201,7 +201,7 @@ export default function FieldManagement() {
         {aois.length > 0 && (
           <button
             onClick={() => setMode('view')}
-            className="absolute top-20 right-4 sm:right-6 z-[500] bg-surface border border-line rounded-xl px-3 py-1.5 text-xs font-semibold text-ink-soft hover:text-ink shadow"
+            className="absolute top-20 right-4 sm:right-6 z-[500] bg-legacy-surface border border-legacy-line rounded-xl px-3 py-1.5 text-xs font-semibold text-legacy-ink-soft hover:text-legacy-ink shadow"
           >
             Cancel — back to map
           </button>
@@ -226,14 +226,14 @@ export default function FieldManagement() {
       </label>
 
       <div className="mb-3.5">
-        <label className="block text-xs font-semibold text-ink-soft mb-1.5">Module</label>
+        <label className="block text-xs font-semibold text-legacy-ink-soft mb-1.5">Module</label>
         <select
           value={module}
           onChange={(e) => {
             setModule(e.target.value as ModuleId);
             setSelectedDate('all');
           }}
-          className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-[#ec3013]/30 focus:border-[#ec3013] transition-shadow"
+          className="w-full border border-legacy-line rounded-xl px-3 py-2 text-sm bg-legacy-surface focus:outline-none focus:ring-2 focus:ring-[#ec3013]/30 focus:border-[#ec3013] transition-shadow"
         >
           {MODULES.map((m) => (
             <option key={m.id} value={m.id}>
@@ -242,20 +242,20 @@ export default function FieldManagement() {
           ))}
         </select>
       </div>
-      <p className="text-[11.5px] text-ink-faint leading-relaxed mb-4">{activeModule.sub}</p>
+      <p className="text-[11.5px] text-legacy-ink-faint leading-relaxed mb-4">{activeModule.sub}</p>
 
       {module === 'smoke' && weather && (
         <div className="bg-fire-50 rounded-xl px-3 py-2.5 mb-4 text-xs">
           <div className="font-bold text-fire-900 mb-1">Live wind at AOI</div>
-          <div className="flex justify-between text-ink-soft">
+          <div className="flex justify-between text-legacy-ink-soft">
             <span>Wind</span>
-            <strong className="text-ink">
+            <strong className="text-legacy-ink">
               {compassLabel(weather.windDirectionDeg ?? 0)} · {weather.windSpeedKmh} km/h
             </strong>
           </div>
-          <div className="flex justify-between text-ink-soft">
+          <div className="flex justify-between text-legacy-ink-soft">
             <span>Temp / Humidity</span>
-            <strong className="text-ink">
+            <strong className="text-legacy-ink">
               {weather.tempC}°C · {weather.humidityPct}%
             </strong>
           </div>
@@ -264,7 +264,7 @@ export default function FieldManagement() {
 
       {module === 'smoke' && (
         <div className="mb-4">
-          <label className="flex items-start gap-2 text-xs font-semibold text-ink-soft cursor-pointer">
+          <label className="flex items-start gap-2 text-xs font-semibold text-legacy-ink-soft cursor-pointer">
             <input
               type="checkbox"
               checked={showSatelliteSmoke}
@@ -273,7 +273,7 @@ export default function FieldManagement() {
             />
             <span>
               Satellite smoke overlay (NASA GIBS)
-              <span className="block font-normal text-ink-faint mt-0.5 normal-case">
+              <span className="block font-normal text-legacy-ink-faint mt-0.5 normal-case">
                 Real satellite-classified smoke/aerosol, same method BMKG uses — requires a single date selected below,
                 not "All".
               </span>
@@ -283,7 +283,7 @@ export default function FieldManagement() {
       )}
 
       <div className="mb-4">
-        <label className="block text-xs font-semibold text-ink-soft mb-2">Time window</label>
+        <label className="block text-xs font-semibold text-legacy-ink-soft mb-2">Time window</label>
         <div className="flex flex-wrap gap-1.5">
           {DAY_RANGE_OPTIONS.map((d) => (
             <button
@@ -295,7 +295,7 @@ export default function FieldManagement() {
               className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
                 dayRange === d
                   ? 'bg-[#ec3013] border-[#ec3013] text-white'
-                  : 'border-line text-ink-soft hover:border-ink-faint hover:bg-canvas'
+                  : 'border-legacy-line text-legacy-ink-soft hover:border-legacy-ink-faint hover:bg-legacy-canvas'
               }`}
             >
               {DAY_LABEL[d]}
@@ -305,17 +305,17 @@ export default function FieldManagement() {
       </div>
 
       <div className="mb-4">
-        <label className="block text-xs font-semibold text-ink-soft mb-2">Time-lapse simulation</label>
+        <label className="block text-xs font-semibold text-legacy-ink-soft mb-2">Time-lapse simulation</label>
         <button
           onClick={() => setSimPlaying((v) => !v)}
           disabled={simFrames.length === 0}
           className={`w-full px-3 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-            simPlaying ? 'bg-ink text-white' : 'bg-[#ec3013] hover:bg-[#c22910] text-white'
+            simPlaying ? 'bg-legacy-ink text-white' : 'bg-[#ec3013] hover:bg-[#c22910] text-white'
           }`}
         >
           {simPlaying ? '⏸ Stop simulation' : '▶ Run simulation'}
         </button>
-        <p className="text-[10.5px] text-ink-faint mt-1.5 leading-relaxed">
+        <p className="text-[10.5px] text-legacy-ink-faint mt-1.5 leading-relaxed">
           {simFrames.length > 0
             ? `Steps through ${simFrames.length} satellite-pass windows (~3h each) across the fetched range — points appear and disappear per pass instead of accumulating.`
             : 'No detections in the current window to animate.'}
@@ -323,14 +323,14 @@ export default function FieldManagement() {
       </div>
 
       <div className="mb-4">
-        <label className="block text-xs font-semibold text-ink-soft mb-2">Detection window</label>
+        <label className="block text-xs font-semibold text-legacy-ink-soft mb-2">Detection window</label>
         <div className="flex gap-1.5 mb-2">
           <button
             onClick={() => setHourMode('relative')}
             className={`flex-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
               hourMode === 'relative'
                 ? 'bg-[#ec3013] border-[#ec3013] text-white'
-                : 'border-line text-ink-soft hover:border-ink-faint hover:bg-canvas'
+                : 'border-legacy-line text-legacy-ink-soft hover:border-legacy-ink-faint hover:bg-legacy-canvas'
             }`}
           >
             Most recent
@@ -340,7 +340,7 @@ export default function FieldManagement() {
             className={`flex-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
               hourMode === 'custom'
                 ? 'bg-[#ec3013] border-[#ec3013] text-white'
-                : 'border-line text-ink-soft hover:border-ink-faint hover:bg-canvas'
+                : 'border-legacy-line text-legacy-ink-soft hover:border-legacy-ink-faint hover:bg-legacy-canvas'
             }`}
           >
             Custom hours
@@ -357,14 +357,14 @@ export default function FieldManagement() {
                   className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
                     hourRange === h
                       ? 'bg-[#ec3013] border-[#ec3013] text-white'
-                      : 'border-line text-ink-soft hover:border-ink-faint hover:bg-canvas'
+                      : 'border-legacy-line text-legacy-ink-soft hover:border-legacy-ink-faint hover:bg-legacy-canvas'
                   }`}
                 >
                   {h}h
                 </button>
               ))}
             </div>
-            <p className="text-[10.5px] text-ink-faint mt-1.5 leading-relaxed">
+            <p className="text-[10.5px] text-legacy-ink-faint mt-1.5 leading-relaxed">
               Showing {hotspots.length} detection{hotspots.length === 1 ? '' : 's'} from the last {hourRange}h, relative
               to the most recent one in view — keeps the map light instead of plotting every point at once. Pick a date
               on the timeline below to browse a specific day instead.
@@ -374,10 +374,10 @@ export default function FieldManagement() {
           <>
             <div className="flex items-center gap-1.5">
               <TimePicker value={customFrom} onChange={setCustomFrom} className="flex-1" />
-              <span className="text-ink-faint text-xs shrink-0">to</span>
+              <span className="text-legacy-ink-faint text-xs shrink-0">to</span>
               <TimePicker value={customTo} onChange={setCustomTo} className="flex-1" />
             </div>
-            <p className="text-[10.5px] text-ink-faint mt-1.5 leading-relaxed">
+            <p className="text-[10.5px] text-legacy-ink-faint mt-1.5 leading-relaxed">
               Showing {hotspots.length} detection{hotspots.length === 1 ? '' : 's'} between {customFrom} and {customTo}{' '}
               WIB, on the most recent day in view.
             </p>
@@ -386,10 +386,10 @@ export default function FieldManagement() {
       </div>
 
       <div className="mb-4">
-        <label className="block text-xs font-semibold text-ink-soft mb-2">Satellite source</label>
+        <label className="block text-xs font-semibold text-legacy-ink-soft mb-2">Satellite source</label>
         <div className="flex flex-col gap-1.5">
           {SOURCE_OPTIONS.map((s) => (
-            <label key={s.id} className="flex items-center gap-2 text-xs text-ink-soft">
+            <label key={s.id} className="flex items-center gap-2 text-xs text-legacy-ink-soft">
               <input
                 type="checkbox"
                 checked={sources.includes(s.id)}
@@ -403,7 +403,7 @@ export default function FieldManagement() {
       </div>
 
       <div className="mb-4">
-        <label className="block text-xs font-semibold text-ink-soft mb-1.5">Opacity: {opacity}%</label>
+        <label className="block text-xs font-semibold text-legacy-ink-soft mb-1.5">Opacity: {opacity}%</label>
         <input
           type="range"
           min={0}
@@ -414,7 +414,7 @@ export default function FieldManagement() {
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-ink-soft cursor-pointer mb-2">
+      <label className="flex items-center gap-2 text-sm text-legacy-ink-soft cursor-pointer mb-2">
         <input
           type="checkbox"
           checked={showBoundary}
@@ -424,7 +424,7 @@ export default function FieldManagement() {
         AOI Boundary
       </label>
 
-      <label className="flex items-start gap-2 text-sm text-ink-soft cursor-pointer">
+      <label className="flex items-start gap-2 text-sm text-legacy-ink-soft cursor-pointer">
         <input
           type="checkbox"
           checked={showWindLayer}
@@ -433,7 +433,7 @@ export default function FieldManagement() {
         />
         <span>
           Wind layer
-          <span className="block font-normal text-[11.5px] text-ink-faint mt-0.5">
+          <span className="block font-normal text-[11.5px] text-legacy-ink-faint mt-0.5">
             Animated wind field over the visible map (Open-Meteo)
           </span>
         </span>
@@ -460,7 +460,7 @@ export default function FieldManagement() {
               className={`w-full text-left rounded-xl px-3.5 py-2.5 border transition-colors ${
                 activeAoi?.id === a.id
                   ? 'bg-fire-50 border-[#ffc4b8] shadow-sm'
-                  : 'border-line hover:border-ink-faint hover:bg-canvas'
+                  : 'border-legacy-line hover:border-legacy-ink-faint hover:bg-legacy-canvas'
               }`}
             >
               {renamingId === a.id ? (
@@ -477,12 +477,12 @@ export default function FieldManagement() {
                     if (e.key === 'Escape') setRenamingId(null);
                   }}
                   onBlur={() => setRenamingId(null)}
-                  className="w-full text-sm font-bold border border-line rounded px-1.5 py-0.5"
+                  className="w-full text-sm font-bold border border-legacy-line rounded px-1.5 py-0.5"
                 />
               ) : (
                 <div className="font-bold text-sm pr-6">{a.name}</div>
               )}
-              <div className="text-[11px] text-ink-faint mt-0.5">
+              <div className="text-[11px] text-legacy-ink-faint mt-0.5">
                 {activeAoi?.id === a.id ? 'active' : 'saved'} · {formatHa(a.areaHa)} · {a.ring.length} pts
               </div>
             </button>
@@ -491,19 +491,19 @@ export default function FieldManagement() {
                 e.stopPropagation();
                 setOpenMenuFor(openMenuFor === a.id ? null : a.id);
               }}
-              className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center text-ink-faint hover:text-ink"
+              className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center text-legacy-ink-faint hover:text-legacy-ink"
             >
               ⋯
             </button>
             {openMenuFor === a.id && (
-              <div className="absolute right-0 top-9 z-30 bg-surface border border-line rounded-xl shadow-lg w-36 py-1">
+              <div className="absolute right-0 top-9 z-30 bg-legacy-surface border border-legacy-line rounded-xl shadow-lg w-36 py-1">
                 <button
                   onClick={() => {
                     setRenamingId(a.id);
                     setRenameValue(a.name);
                     setOpenMenuFor(null);
                   }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-ink-soft hover:bg-canvas"
+                  className="w-full text-left px-3 py-1.5 text-xs text-legacy-ink-soft hover:bg-legacy-canvas"
                 >
                   Edit name
                 </button>
@@ -512,7 +512,7 @@ export default function FieldManagement() {
                     deleteAoi(a.id);
                     setOpenMenuFor(null);
                   }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-[#ae1800] dark:text-[#ff8a65] hover:bg-canvas"
+                  className="w-full text-left px-3 py-1.5 text-xs text-[#ae1800] dark:text-[#ff8a65] hover:bg-legacy-canvas"
                 >
                   Delete
                 </button>
@@ -520,24 +520,24 @@ export default function FieldManagement() {
             )}
           </div>
         ))}
-        {aois.length === 0 && <div className="text-xs text-ink-faint">No AOIs yet.</div>}
+        {aois.length === 0 && <div className="text-xs text-legacy-ink-faint">No AOIs yet.</div>}
       </div>
     </div>
   );
 
   return (
     <div className="flex flex-col sm:flex-row h-full min-h-[480px]">
-      <aside className="hidden sm:flex sm:flex-col w-72 shrink-0 border-r border-line overflow-y-auto bg-surface">
-        <div className="flex border-b border-line">
+      <aside className="hidden sm:flex sm:flex-col w-72 shrink-0 border-r border-legacy-line overflow-y-auto bg-legacy-surface">
+        <div className="flex border-b border-legacy-line">
           <button
             onClick={() => setSideTab('layer')}
-            className={`flex-1 py-3.5 font-[Manrope] font-bold text-sm transition-colors ${sideTab === 'layer' ? 'text-ink border-b-2 border-[#ec3013]' : 'text-ink-faint hover:text-ink-soft'}`}
+            className={`flex-1 py-3.5 font-[Manrope] font-bold text-sm transition-colors ${sideTab === 'layer' ? 'text-legacy-ink border-b-2 border-[#ec3013]' : 'text-legacy-ink-faint hover:text-legacy-ink-soft'}`}
           >
             Layer
           </button>
           <button
             onClick={() => setSideTab('history')}
-            className={`flex-1 py-3.5 font-[Manrope] font-bold text-sm transition-colors ${sideTab === 'history' ? 'text-ink border-b-2 border-[#ec3013]' : 'text-ink-faint hover:text-ink-soft'}`}
+            className={`flex-1 py-3.5 font-[Manrope] font-bold text-sm transition-colors ${sideTab === 'history' ? 'text-legacy-ink border-b-2 border-[#ec3013]' : 'text-legacy-ink-faint hover:text-legacy-ink-soft'}`}
           >
             History
           </button>
@@ -547,10 +547,10 @@ export default function FieldManagement() {
 
       <div className="flex-1 relative overflow-hidden">
         {!activeAoi ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-canvas px-6">
+          <div className="absolute inset-0 flex items-center justify-center bg-legacy-canvas px-6">
             <div className="text-center max-w-xs">
-              <div className="font-bold text-ink mb-1">No AOI selected</div>
-              <p className="text-sm text-ink-soft mb-4">
+              <div className="font-bold text-legacy-ink mb-1">No AOI selected</div>
+              <p className="text-sm text-legacy-ink-soft mb-4">
                 Draw an Area of Interest to start fetching live fire hotspot data.
               </p>
               <button
@@ -593,7 +593,7 @@ export default function FieldManagement() {
             </div>
             <div className="absolute top-4 left-4 right-4 sm:right-auto z-[400] flex flex-col gap-2">
               {simPlaying && simFrames[simFrameIndex % simFrames.length] && (
-                <div className="bg-ink text-white rounded-xl shadow px-3 py-1.5 text-xs font-bold w-fit tabular-nums">
+                <div className="bg-legacy-ink text-white rounded-xl shadow px-3 py-1.5 text-xs font-bold w-fit tabular-nums">
                   ▶ {formatWibDateTime(simFrames[simFrameIndex % simFrames.length].startMs)}–
                   {formatWibDateTime(simFrames[simFrameIndex % simFrames.length].startMs + SIM_FRAME_MS)} WIB
                   <span className="font-normal text-white/70 ml-2">
@@ -603,12 +603,12 @@ export default function FieldManagement() {
                 </div>
               )}
               {status === 'loading' && (
-                <div className="bg-surface rounded-xl shadow border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft w-fit">
+                <div className="bg-legacy-surface rounded-xl shadow border border-legacy-line px-3 py-1.5 text-xs font-semibold text-legacy-ink-soft w-fit">
                   Fetching live hotspots…
                 </div>
               )}
               {status === 'error' && (
-                <div className="bg-surface rounded-xl shadow border border-red-200 dark:border-red-900/50 px-3 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 max-w-xs">
+                <div className="bg-legacy-surface rounded-xl shadow border border-red-200 dark:border-red-900/50 px-3 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 max-w-xs">
                   {error}{' '}
                   <button onClick={refetch} className="underline ml-1">
                     retry
@@ -616,7 +616,7 @@ export default function FieldManagement() {
                 </div>
               )}
               {status === 'idle' && fetchedAt && (
-                <div className="bg-surface rounded-xl shadow border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft w-fit">
+                <div className="bg-legacy-surface rounded-xl shadow border border-legacy-line px-3 py-1.5 text-xs font-semibold text-legacy-ink-soft w-fit">
                   {inAoiHotspots.length} in AOI · {nearbyHotspots.length} nearby · synced{' '}
                   {new Date(fetchedAt).toLocaleTimeString()}
                 </div>
@@ -639,7 +639,7 @@ export default function FieldManagement() {
 
             <button
               onClick={() => navigate('/analytics')}
-              className="hidden sm:block absolute bottom-20 right-4 z-[400] bg-surface border border-line rounded-xl px-3.5 py-2 text-xs font-semibold text-ink-soft hover:text-ink shadow"
+              className="hidden sm:block absolute bottom-20 right-4 z-[400] bg-legacy-surface border border-legacy-line rounded-xl px-3.5 py-2 text-xs font-semibold text-legacy-ink-soft hover:text-legacy-ink shadow"
             >
               View full analytics →
             </button>
@@ -668,24 +668,24 @@ export default function FieldManagement() {
                 <div className="absolute inset-0 bg-black/40" />
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="relative w-full max-h-[80vh] overflow-y-auto bg-surface rounded-t-2xl shadow-2xl"
+                  className="relative w-full max-h-[80vh] overflow-y-auto bg-legacy-surface rounded-t-2xl shadow-2xl"
                 >
-                  <div className="sticky top-0 bg-surface flex items-center justify-between px-4 py-3 border-b border-line">
+                  <div className="sticky top-0 bg-legacy-surface flex items-center justify-between px-4 py-3 border-b border-legacy-line">
                     <div className="flex gap-4">
                       <button
                         onClick={() => setSideTab('layer')}
-                        className={`font-[Manrope] font-bold text-sm ${sideTab === 'layer' ? 'text-ink' : 'text-ink-faint'}`}
+                        className={`font-[Manrope] font-bold text-sm ${sideTab === 'layer' ? 'text-legacy-ink' : 'text-legacy-ink-faint'}`}
                       >
                         Layer
                       </button>
                       <button
                         onClick={() => setSideTab('history')}
-                        className={`font-[Manrope] font-bold text-sm ${sideTab === 'history' ? 'text-ink' : 'text-ink-faint'}`}
+                        className={`font-[Manrope] font-bold text-sm ${sideTab === 'history' ? 'text-legacy-ink' : 'text-legacy-ink-faint'}`}
                       >
                         History
                       </button>
                     </div>
-                    <button onClick={() => setMobilePanelOpen(false)} className="text-ink-faint">
+                    <button onClick={() => setMobilePanelOpen(false)} className="text-legacy-ink-faint">
                       <svg
                         width="20"
                         height="20"

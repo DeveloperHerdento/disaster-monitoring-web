@@ -96,7 +96,7 @@ export default function Pricing() {
           Pricing
         </span>
         <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">Fire monitoring, sized to how much land you watch</h1>
-        {/* <p className="text-ink-soft text-sm sm:text-base">
+        {/* <p className="text-legacy-ink-soft text-sm sm:text-base">
           Every plan runs on the same live NASA FIRMS data. Higher tiers unlock more areas, faster refresh, and deeper analysis.
         </p> */}
       </div>
@@ -108,12 +108,12 @@ export default function Pricing() {
             <div className="flex-1">
               <div className="flex items-baseline gap-2 mb-1">
                 <h2 className="font-[Manrope] font-extrabold text-xl">{INITIAL_PLAN.name}</h2>
-                <span className="text-xs text-ink-faint font-semibold">— {INITIAL_PLAN.subtitle}</span>
+                <span className="text-xs text-legacy-ink-faint font-semibold">— {INITIAL_PLAN.subtitle}</span>
               </div>
-              <p className="text-xs text-ink-faint leading-relaxed max-w-md mb-4">{INITIAL_PLAN.description}</p>
+              <p className="text-xs text-legacy-ink-faint leading-relaxed max-w-md mb-4">{INITIAL_PLAN.description}</p>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
                 {INITIAL_PLAN.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-ink-soft leading-snug">
+                  <li key={idx} className="flex items-start gap-2 text-legacy-ink-soft leading-snug">
                     <span className="text-[#ec3013] font-bold text-sm leading-none shrink-0">•</span>
                     <span>{feature}</span>
                   </li>
@@ -121,10 +121,10 @@ export default function Pricing() {
               </ul>
             </div>
             <div className="flex flex-col items-start sm:items-end shrink-0">
-              <div className="font-[Manrope] font-extrabold text-2xl text-ink tabular-nums leading-tight">
+              <div className="font-[Manrope] font-extrabold text-2xl text-legacy-ink tabular-nums leading-tight">
                 {INITIAL_PLAN.price}
               </div>
-              <div className="text-xs text-ink-faint mt-0.5 mb-4">one-time, first month</div>
+              <div className="text-xs text-legacy-ink-faint mt-0.5 mb-4">one-time, first month</div>
               <button
                 type="button"
                 className="text-xs font-bold uppercase tracking-wide bg-[#ec3013] text-white px-5 py-2.5 rounded-full hover:bg-[#d42a10] transition-colors whitespace-nowrap"
@@ -134,7 +134,7 @@ export default function Pricing() {
             </div>
           </div>
         </div>
-        <p className="text-center text-[11px] text-ink-faint mt-3">
+        <p className="text-center text-[11px] text-legacy-ink-faint mt-3">
           This is a one-time onboarding fee, separate from your monthly plan — it doesn't lock you into any tier. Once
           onboarding is done, choose the monthly plan below that fits your monitoring needs.
         </p>
@@ -147,8 +147,8 @@ export default function Pricing() {
             key={plan.id}
             className={`relative flex flex-col h-full rounded-2xl border p-6 transition-all duration-200 ${
               plan.highlight
-                ? 'border-[#ec3013] shadow-xl bg-surface ring-1 ring-[#ec3013]'
-                : 'border-line bg-surface shadow-sm hover:shadow-md'
+                ? 'border-[#ec3013] shadow-xl bg-legacy-surface ring-1 ring-[#ec3013]'
+                : 'border-legacy-line bg-legacy-surface shadow-sm hover:shadow-md'
             }`}
           >
             {/* Highlight Badge */}
@@ -159,23 +159,23 @@ export default function Pricing() {
             )}
 
             {/* Header Section (Nama, Tagline, Harga) */}
-            <div className="border-b border-line-soft pb-5 mb-5">
+            <div className="border-b border-legacy-line-soft pb-5 mb-5">
               <div className="font-[Manrope] font-extrabold text-xl mb-1">{plan.name}</div>
-              <p className="text-xs text-ink-faint mb-4 leading-relaxed min-h-[36px]">{plan.tagline}</p>
+              <p className="text-xs text-legacy-ink-faint mb-4 leading-relaxed min-h-[36px]">{plan.tagline}</p>
               <div>
-                <div className="font-[Manrope] font-extrabold text-2xl text-ink tabular-nums leading-tight">
+                <div className="font-[Manrope] font-extrabold text-2xl text-legacy-ink tabular-nums leading-tight">
                   {plan.price}
                 </div>
-                {plan.priceSub && <div className="text-xs text-ink-faint mt-0.5">{plan.priceSub}</div>}
+                {plan.priceSub && <div className="text-xs text-legacy-ink-faint mt-0.5">{plan.priceSub}</div>}
               </div>
             </div>
 
             {/* Feature List */}
             <div className="flex-1 text-xs">
-              <div className="font-semibold text-ink-soft mb-3 text-[11px] uppercase tracking-wide"></div>
+              <div className="font-semibold text-legacy-ink-soft mb-3 text-[11px] uppercase tracking-wide"></div>
               <ul className="space-y-2.5">
                 {TIER_FEATURES[plan.id].map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-ink-soft leading-snug">
+                  <li key={idx} className="flex items-start gap-2 text-legacy-ink-soft leading-snug">
                     <span className="text-[#ec3013] font-bold text-sm leading-none shrink-0">•</span>
                     <span>{feature}</span>
                   </li>
@@ -187,7 +187,7 @@ export default function Pricing() {
       </div>
 
       {/* Footer Text */}
-      <p className="text-center text-xs text-ink-faint mt-10">
+      <p className="text-center text-xs text-legacy-ink-faint mt-10">
         Prices in IDR, billed monthly. Need something between tiers, or a pilot on one AOI first?{' '}
         <span className="text-[#ec3013] font-semibold cursor-pointer hover:underline">Talk to us</span>.
       </p>

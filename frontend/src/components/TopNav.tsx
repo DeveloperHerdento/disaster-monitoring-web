@@ -1,31 +1,32 @@
 import { NavLink } from 'react-router-dom';
 import { useAoi } from '../state/AoiContext';
-import { useTheme } from '../lib/theme';
+import { useTheme } from './ui/ratra';
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `text-sm font-semibold transition-colors ${isActive ? 'text-[#ec3013]' : 'text-ink-soft hover:text-ink'}`;
+  `text-sm font-semibold transition-colors ${isActive ? 'text-[#ec3013]' : 'text-legacy-ink-soft hover:text-legacy-ink'}`;
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
-  `flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-colors ${isActive ? 'text-[#ec3013]' : 'text-ink-faint'}`;
+  `flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-colors ${isActive ? 'text-[#ec3013]' : 'text-legacy-ink-faint'}`;
 
 export default function TopNav() {
   const { activeAoi, inAoiHotspots, status } = useAoi();
-  const { theme, toggleTheme } = useTheme();
+  const { resolved: theme, setTheme } = useTheme();
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-surface border-b border-line">
+      <header className="sticky top-0 z-50 bg-legacy-surface border-b border-legacy-line">
         <div className="h-14 sm:h-15 px-4 sm:px-8 flex items-center gap-4 sm:gap-6">
-          <span className="flex items-baseline gap-1.5 font-[Manrope] font-extrabold text-base sm:text-lg tracking-tight text-ink shrink-0">
-            RATRA <span className="text-[11px] font-semibold text-ink-faint tracking-wider">MAPS</span>
+          <span className="flex items-baseline gap-1.5 font-[Manrope] font-extrabold text-base sm:text-lg tracking-tight text-legacy-ink shrink-0">
+            RATRA <span className="text-[11px] font-semibold text-legacy-ink-faint tracking-wider">MAPS</span>
             <span className="ml-1 text-[10px] font-bold bg-fire-100 text-fire-900 px-1.5 py-0.5 rounded-full">
               FIRE
             </span>
           </span>
 
-          <div className="hidden sm:flex bg-canvas p-0.5 rounded-full text-xs shrink-0">
-            <span className="px-3 py-1.5 text-ink-faint cursor-not-allowed select-none">Agriculture</span>
-            <span className="px-3 py-1.5 rounded-full bg-surface shadow-sm font-semibold text-ink">
+          <div className="hidden sm:flex bg-legacy-canvas p-0.5 rounded-full text-xs shrink-0">
+            <span className="px-3 py-1.5 text-legacy-ink-faint cursor-not-allowed select-none">Agriculture</span>
+            <span className="px-3 py-1.5 rounded-full bg-legacy-surface shadow-sm font-semibold text-legacy-ink">
               Fire Monitoring
             </span>
           </div>
@@ -47,18 +48,18 @@ export default function TopNav() {
 
           <div className="ml-auto flex items-center gap-2 sm:gap-4">
             {activeAoi && (
-              <div className="hidden md:flex items-center gap-2 text-xs text-ink-soft bg-canvas rounded-full pl-2 pr-3 py-1">
+              <div className="hidden md:flex items-center gap-2 text-xs text-legacy-ink-soft bg-legacy-canvas rounded-full pl-2 pr-3 py-1">
                 <span
                   className={`w-2 h-2 rounded-full ${status === 'loading' ? 'bg-amber-400 live-dot' : status === 'error' ? 'bg-red-500' : 'bg-emerald-500 live-dot'}`}
                 />
-                <span className="font-medium text-ink">{activeAoi.name}</span>
-                <span className="text-ink-faint">· {inAoiHotspots.length} active</span>
+                <span className="font-medium text-legacy-ink">{activeAoi.name}</span>
+                <span className="text-legacy-ink-faint">· {inAoiHotspots.length} active</span>
               </div>
             )}
             <button
               onClick={toggleTheme}
               title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-canvas text-ink-soft transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-legacy-canvas text-legacy-ink-soft transition-colors"
             >
               {theme === 'dark' ? (
                 <svg
@@ -89,7 +90,7 @@ export default function TopNav() {
                 </svg>
               )}
             </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-canvas text-ink-soft transition-colors">
+            <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-legacy-canvas text-legacy-ink-soft transition-colors">
               <svg
                 width="18"
                 height="18"
@@ -104,7 +105,7 @@ export default function TopNav() {
                 <path d="M9.5 18a2.5 2.5 0 0 0 5 0"></path>
               </svg>
             </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-canvas text-ink-soft transition-colors">
+            <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-legacy-canvas text-legacy-ink-soft transition-colors">
               <svg
                 width="18"
                 height="18"
@@ -122,18 +123,18 @@ export default function TopNav() {
           </div>
         </div>
         {activeAoi && (
-          <div className="md:hidden flex items-center gap-2 text-[11px] text-ink-soft bg-canvas px-4 py-1.5 border-t border-line">
+          <div className="md:hidden flex items-center gap-2 text-[11px] text-legacy-ink-soft bg-legacy-canvas px-4 py-1.5 border-t border-legacy-line">
             <span
               className={`w-1.5 h-1.5 rounded-full ${status === 'loading' ? 'bg-amber-400 live-dot' : status === 'error' ? 'bg-red-500' : 'bg-emerald-500 live-dot'}`}
             />
-            <span className="font-medium text-ink truncate">{activeAoi.name}</span>
-            <span className="text-ink-faint shrink-0">· {inAoiHotspots.length} active</span>
+            <span className="font-medium text-legacy-ink truncate">{activeAoi.name}</span>
+            <span className="text-legacy-ink-faint shrink-0">· {inAoiHotspots.length} active</span>
           </div>
         )}
       </header>
 
       <nav
-        className="sm:hidden fixed bottom-0 inset-x-0 z-50 h-16 bg-surface border-t border-line flex"
+        className="sm:hidden fixed bottom-0 inset-x-0 z-50 h-16 bg-legacy-surface border-t border-legacy-line flex"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <NavLink to="/" end className={tabClass}>
